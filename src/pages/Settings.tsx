@@ -111,7 +111,9 @@ export function Settings() {
                 onChange={(e) => updateAIConfig({ provider: e.target.value as any })}
                 options={[
                   { value: 'replicate', label: 'Replicate (Stable Diffusion)' },
-                  { value: 'openai', label: 'OpenAI (DALL-E 3)' }
+                  { value: 'openai', label: 'OpenAI (DALL-E 3)' },
+                  { value: 'gemini', label: 'Google Gemini (Nano Banana)' },
+                  { value: 'whisk', label: 'Google Whisk (não-oficial)' }
                 ]}
               />
 
@@ -151,6 +153,44 @@ export function Settings() {
                       { value: 'dall-e-2', label: 'DALL-E 2' }
                     ]}
                   />
+                </>
+              )}
+
+              {aiConfig.provider === 'gemini' && (
+                <>
+                  <Input
+                    label="Gemini API Key"
+                    type="password"
+                    value={aiConfig.geminiApiKey}
+                    onChange={(e) => updateAIConfig({ geminiApiKey: e.target.value })}
+                    placeholder="(obter em ai.google.dev)"
+                  />
+                  <Select
+                    label="Model"
+                    value={aiConfig.geminiModel}
+                    onChange={(e) => updateAIConfig({ geminiModel: e.target.value })}
+                    options={[
+                      { value: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash Image' },
+                      { value: 'gemini-3.1-flash-image-preview', label: 'Gemini 3.1 Flash Image' },
+                      { value: 'gemini-3-pro-image-preview', label: 'Gemini 3 Pro Image' }
+                    ]}
+                  />
+                </>
+              )}
+
+              {aiConfig.provider === 'whisk' && (
+                <>
+                  <Input
+                    label="Google Account Cookie"
+                    type="password"
+                    value={aiConfig.whiskCookie}
+                    onChange={(e) => updateAIConfig({ whiskCookie: e.target.value })}
+                    placeholder="__Secure-... (cookie do Google)"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    ⚠️ Whisk foi descontinuado em abril/2026. Pode não funcionar.
+                    Extraia o cookie <code>__Secure-ENID</code> do site labs.google/whisk.
+                  </p>
                 </>
               )}
 

@@ -10,7 +10,7 @@ export type Language = 'en' | 'pt-BR'
 
 export type GenerationStatus = 'idle' | 'preparing' | 'generating' | 'paused' | 'completed' | 'error'
 
-export type AIProvider = 'replicate' | 'openai'
+export type AIProvider = 'replicate' | 'openai' | 'gemini' | 'whisk'
 
 export interface AIConfig {
   provider: AIProvider
@@ -18,6 +18,9 @@ export interface AIConfig {
   replicateModel: string
   openaiApiKey: string
   openaiModel: string
+  geminiApiKey: string
+  geminiModel: string
+  whiskCookie: string
   defaultPrompt: string
   negativePrompt: string
   numInferenceSteps: number
@@ -303,6 +306,9 @@ export const DEFAULT_AI_CONFIG: AIConfig = {
   replicateModel: 'stability-ai/stable-diffusion:db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf',
   openaiApiKey: '',
   openaiModel: 'dall-e-3',
+  geminiApiKey: '',
+  geminiModel: 'gemini-2.5-flash-image',
+  whiskCookie: '',
   defaultPrompt: 'Create a variation of this character with different',
   negativePrompt: 'low quality, blurry, distorted, deformed, ugly, bad anatomy',
   numInferenceSteps: 30,

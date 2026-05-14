@@ -49,7 +49,12 @@ export class AIGenerationService {
     projectDir: string,
     callbacks: AIGenerationCallbacks
   ): Promise<AIGeneratedAsset[]> {
-    if (!this.config || (!this.config.replicateApiKey && !this.config.openaiApiKey)) {
+    if (!this.config || (
+      !this.config.replicateApiKey &&
+      !this.config.openaiApiKey &&
+      !this.config.geminiApiKey &&
+      !this.config.whiskCookie
+    )) {
       throw new Error('AI not configured. Set your API key in Settings > AI.')
     }
 
@@ -136,6 +141,10 @@ export class AIGenerationService {
         return this.callReplicate(baseImagePath, prompt)
       case 'openai':
         return this.callOpenAI(baseImagePath, prompt)
+      case 'gemini':
+        return this.callGemini(baseImagePath, prompt)
+      case 'whisk':
+        return this.callWhisk(baseImagePath, prompt)
       default:
         throw new Error(`Unsupported AI provider: ${this.config.provider}`)
     }
@@ -246,6 +255,98 @@ export class AIGenerationService {
     }
 
     throw new Error('OpenAI returned no image data')
+  }
+
+  private async callGemini(baseImagePath: string, prompt: string): Promise<string> {
+    const apiKey = this.config?.geminiApiKey
+    if (!apiKey) throw new Error('Gemini API key not configured')
+
+    const model = this.config?.geminiModel || 'gemini-2.5-flash-image'
+    const imageBase64 = fs.readFileSync(baseImagePath, { encoding: 'base64' })
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'x-goog-api-key': apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              {
+                inline_data: {
+                  mime_type: 'image/png',
+                  data: imageBase64
+                }
+              }
+            ]
+          }],
+          generationConfig: {
+            responseModalities: ['Image']
+          }
+        })
+      }
+    )
+
+    if (!response.ok) {
+      const errText = await response.text()
+      throw new Error(`Gemini API error: ${response.status} ${errText}`)
+    }
+
+    const data = await response.json()
+    const parts = data.candidates?.[0]?.content?.parts
+    if (!parts) throw new Error('Gemini returned no image data')
+
+    for (const part of parts) {
+      if (part.inlineData?.data) {
+        return `data:image/png;base64,${part.inlineData.data}`
+      }
+    }
+
+    throw new Error('Gemini returned no image data in response parts')
+  }
+
+  private async callWhisk(baseImagePath: string, prompt: string): Promise<string> {
+    const cookie = this.config?.whiskCookie
+    if (!cookie) throw new Error('Whisk cookie not configured')
+
+    try {
+      const { Whisk } = require('@rohitaryal/whisk-api')
+      const whisk = new Whisk(cookie)
+      const project = await whisk.newProject('NFT Generator')
+
+      const imageBase64 = fs.readFileSync(baseImagePath, { encoding: 'base64' })
+      const uploadResult = await whisk.upload(baseImagePath)
+      const uploadId = uploadResult?.mediaId || uploadResult?.id
+
+      let media
+      if (uploadId) {
+        media = await project.generateImage({
+          prompt,
+          referenceImage: uploadId,
+          aspectRatio: 'IMAGE_ASPECT_RATIO_SQUARE'
+        })
+      } else {
+        media = await project.generateImage({
+          prompt,
+          aspectRatio: 'IMAGE_ASPECT_RATIO_SQUARE'
+        })
+      }
+
+      const tempDir = path.join(require('os').tmpdir(), 'nft-whisk')
+      if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true })
+      const tempPath = path.join(tempDir, `${uuidv4()}.png`)
+      await media.save(tempPath)
+
+      const resultBase64 = fs.readFileSync(tempPath, { encoding: 'base64' })
+      fs.unlinkSync(tempPath)
+      return `data:image/png;base64,${resultBase64}`
+    } catch (err) {
+      throw new Error(`Whisk generation failed: ${(err as Error).message}`)
+    }
   }
 
   private async downloadImageAsBase64(url: string): Promise<string> {
