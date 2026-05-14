@@ -34,6 +34,13 @@ export const GenerationAPI = {
   preview: (seed?: string) => ensureApi().generation.preview(seed)
 }
 
+export const AIAPI = {
+  getConfig: () => ensureApi().ai.getConfig(),
+  saveConfig: (config: any) => ensureApi().ai.saveConfig(config),
+  generateLayers: (request: any) => ensureApi().ai.generateLayers(request),
+  cancel: () => ensureApi().ai.cancel()
+}
+
 export const RarityAPI = {
   calculate: () => ensureApi().rarity.calculate(),
   normalize: () => ensureApi().rarity.normalize()

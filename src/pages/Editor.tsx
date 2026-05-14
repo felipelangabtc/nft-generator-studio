@@ -12,6 +12,7 @@ import { CompatibilityRules } from '../components/editor/CompatibilityRules'
 import { GenerationDialog } from '../components/editor/GenerationDialog'
 import { ExportDialog } from '../components/editor/ExportDialog'
 import { ConsolePanel } from '../components/editor/ConsolePanel'
+import { AIGenerationPanel } from '../components/editor/AIGenerationPanel'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { Layers, Weight, AlertTriangle, Settings2 } from 'lucide-react'
@@ -23,7 +24,7 @@ export function Editor() {
   const {
     activeTab, setActiveTab, showConsole, showSidebar,
     addConsoleEntry, showGenerationDialog, setShowGenerationDialog,
-    showExportDialog, setShowExportDialog
+    showExportDialog, setShowExportDialog, showAIGeneration, setShowAIGeneration
   } = useEditorStore()
   const { addToast } = useUIStore()
 
@@ -139,6 +140,11 @@ export function Editor() {
       <ExportDialog
         open={showExportDialog}
         onClose={() => setShowExportDialog(false)}
+      />
+
+      <AIGenerationPanel
+        open={showAIGeneration}
+        onClose={() => setShowAIGeneration(false)}
       />
     </div>
   )

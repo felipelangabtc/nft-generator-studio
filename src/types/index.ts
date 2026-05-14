@@ -10,6 +10,46 @@ export type Language = 'en' | 'pt-BR'
 
 export type GenerationStatus = 'idle' | 'preparing' | 'generating' | 'paused' | 'completed' | 'error'
 
+export type AIProvider = 'replicate' | 'openai'
+
+export interface AIConfig {
+  provider: AIProvider
+  replicateApiKey: string
+  replicateModel: string
+  openaiApiKey: string
+  openaiModel: string
+  defaultPrompt: string
+  negativePrompt: string
+  numInferenceSteps: number
+  guidanceScale: number
+}
+
+export interface AIGenerateRequest {
+  baseImagePath: string
+  categoryId: string
+  categoryName: string
+  prompt: string
+  count: number
+}
+
+export interface AIGeneratedAsset {
+  id: string
+  name: string
+  filePath: string
+  thumbnailPath: string
+  prompt: string
+  width: number
+  height: number
+}
+
+export interface AIGenerateProgress {
+  status: 'idle' | 'generating' | 'completed' | 'error'
+  current: number
+  total: number
+  generatedAssets: AIGeneratedAsset[]
+  error?: string
+}
+
 export type AssetStatus = 'active' | 'disabled'
 
 export interface Project {
@@ -255,6 +295,18 @@ export const DEFAULT_OUTPUT_CONFIG: OutputConfig = {
   watermarkOpacity: 0.3,
   createSubfolders: true,
   batchSize: 100
+}
+
+export const DEFAULT_AI_CONFIG: AIConfig = {
+  provider: 'replicate',
+  replicateApiKey: '',
+  replicateModel: 'stability-ai/stable-diffusion:db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf',
+  openaiApiKey: '',
+  openaiModel: 'dall-e-3',
+  defaultPrompt: 'Create a variation of this character with different',
+  negativePrompt: 'low quality, blurry, distorted, deformed, ugly, bad anatomy',
+  numInferenceSteps: 30,
+  guidanceScale: 7.5
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {

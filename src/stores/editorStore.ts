@@ -16,6 +16,7 @@ interface EditorState {
   isFullscreen: boolean
   showGenerationDialog: boolean
   showExportDialog: boolean
+  showAIGeneration: boolean
 
   setSelectedCategory: (id: string | null) => void
   setSelectedAsset: (id: string | null) => void
@@ -34,6 +35,7 @@ interface EditorState {
   toggleFullscreen: () => void
   setShowGenerationDialog: (show: boolean) => void
   setShowExportDialog: (show: boolean) => void
+  setShowAIGeneration: (show: boolean) => void
 }
 
 export interface ConsoleEntry {
@@ -60,6 +62,7 @@ export const useEditorStore = create<EditorState>()(
     isFullscreen: false,
     showGenerationDialog: false,
     showExportDialog: false,
+    showAIGeneration: false,
 
     setSelectedCategory: (id) => set(state => {
       state.selectedCategoryId = id
@@ -151,6 +154,10 @@ export const useEditorStore = create<EditorState>()(
 
     setShowExportDialog: (show) => set(state => {
       state.showExportDialog = show
+    }),
+
+    setShowAIGeneration: (show) => set(state => {
+      state.showAIGeneration = show
     })
   }))
 )

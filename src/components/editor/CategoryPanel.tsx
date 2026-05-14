@@ -6,12 +6,12 @@ import { Input } from '../ui/Input'
 import { Badge } from '../ui/Badge'
 import {
   Plus, Trash2, Eye, EyeOff, GripVertical, Image,
-  Upload, ChevronRight
+  Upload, ChevronRight, Brain
 } from 'lucide-react'
 
 export function CategoryPanel() {
   const { currentProject, addCategory, updateCategory, removeCategory, uploadAssets } = useProjectStore()
-  const { selectedCategoryId, setSelectedCategory } = useEditorStore()
+  const { selectedCategoryId, setSelectedCategory, setShowAIGeneration } = useEditorStore()
   const [newCategoryName, setNewCategoryName] = useState('')
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
 
@@ -38,9 +38,16 @@ export function CategoryPanel() {
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Categories
         </h3>
-        <Badge variant="outline" className="text-[10px]">
-          {currentProject.categories.length}
-        </Badge>
+        <div className="flex items-center gap-1">
+          {currentProject.categories.length > 0 && (
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowAIGeneration(true)}>
+              <Brain className="h-3.5 w-3.5" />
+            </Button>
+          )}
+          <Badge variant="outline" className="text-[10px]">
+            {currentProject.categories.length}
+          </Badge>
+        </div>
       </div>
 
       <div className="flex gap-2">

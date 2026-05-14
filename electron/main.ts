@@ -8,6 +8,7 @@ import { ImageService } from './services/imageService'
 import { GenerationService } from './services/generationService'
 import { RarityService } from './services/rarityService'
 import { MetadataService } from './services/metadataService'
+import { AIGenerationService } from './services/aiGenerationService'
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
 
@@ -28,6 +29,7 @@ let imageService: ImageService
 let generationService: GenerationService
 let rarityService: RarityService
 let metadataService: MetadataService
+let aiGenerationService: AIGenerationService
 
 function ensureDirectories(): void {
   const dirs = [
@@ -294,6 +296,7 @@ function setupIpcHandlers(): void {
   rarityService = new RarityService(logger)
   metadataService = new MetadataService(logger)
   generationService = new GenerationService(imageService, metadataService, logger)
+  aiGenerationService = new AIGenerationService(app.getPath('userData'), logger)
 
   ipcMain.handle('project:create', async (_, data) => {
     return projectService.create(data)
@@ -445,6 +448,30 @@ function setupIpcHandlers(): void {
       return metadataService.exportCollection(config, project, result.filePaths[0])
     }
     return null
+  })
+
+  ipcMain.handle('ai:getConfig', async () => {
+    return aiGenerationService.getConfig()
+  })
+
+  ipcMain.handle('ai:saveConfig', async (_, config) => {
+    return aiGenerationService.saveConfig(config)
+  })
+
+  ipcMain.handle('ai:generateLayers', async (_, request) => {
+    const project = projectService.getCurrentProject()
+    if (!project) throw new Error('No project open')
+    const projectDir = projectService.getCurrentProjectDir()
+    if (!projectDir) throw new Error('No project directory')
+    return aiGenerationService.generateLayers(request, projectDir, {
+      onProgress: () => {},
+      onAssetGenerated: () => {},
+      onError: (msg) => logger.warn({ msg }, 'AI generation warning')
+    })
+  })
+
+  ipcMain.handle('ai:cancel', async () => {
+    return aiGenerationService.cancel()
   })
 
   ipcMain.handle('report:generate', async (_, format) => {

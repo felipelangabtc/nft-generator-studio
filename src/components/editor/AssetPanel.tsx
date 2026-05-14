@@ -2,11 +2,11 @@ import { useProjectStore } from '../../stores/projectStore'
 import { useEditorStore } from '../../stores/editorStore'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
-import { Image, Upload, Trash2, SlidersHorizontal } from 'lucide-react'
+import { Image, Upload, Trash2, SlidersHorizontal, Brain } from 'lucide-react'
 
 export function AssetPanel() {
   const { currentProject, removeAsset, uploadAssets } = useProjectStore()
-  const { selectedCategoryId, setSelectedAsset, selectedAssetId } = useEditorStore()
+  const { selectedCategoryId, setSelectedAsset, selectedAssetId, setShowAIGeneration } = useEditorStore()
 
   const selectedCategory = currentProject?.categories.find(c => c.id === selectedCategoryId)
 
@@ -23,6 +23,9 @@ export function AssetPanel() {
         </div>
         {selectedCategory && (
           <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAIGeneration(true)}>
+              <Brain className="h-3.5 w-3.5" />
+            </Button>
             <Button variant="ghost" size="icon" className="h-7 w-7">
               <SlidersHorizontal className="h-3.5 w-3.5" />
             </Button>
@@ -45,11 +48,17 @@ export function AssetPanel() {
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
             <Image className="h-10 w-10 mb-3 opacity-30" />
             <p className="text-sm">No assets in this category</p>
-            <p className="text-xs mt-2 mb-4">Upload PNG files with transparency</p>
-            <Button variant="outline" size="sm" onClick={() => uploadAssets(selectedCategory.id)}>
-              <Upload className="h-3.5 w-3.5 mr-2" />
-              Upload Assets
-            </Button>
+            <p className="text-xs mt-2 mb-4">Upload PNG files or generate with AI</p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => uploadAssets(selectedCategory.id)}>
+                <Upload className="h-3.5 w-3.5 mr-2" />
+                Upload Assets
+              </Button>
+              <Button variant="default" size="sm" onClick={() => setShowAIGeneration(true)}>
+                <Brain className="h-3.5 w-3.5 mr-2" />
+                Generate with AI
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">

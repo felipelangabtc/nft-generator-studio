@@ -1,12 +1,18 @@
+import { useState, useEffect } from 'react'
 import { useUIStore } from '../stores/uiStore'
 import { Button } from '../components/ui/Button'
 import { Select } from '../components/ui/Select'
+import { Input } from '../components/ui/Input'
 import { Label } from '../components/ui/Label'
 import { Switch } from '../components/ui/Switch'
+import { Slider } from '../components/ui/Slider'
 import { motion } from 'framer-motion'
+import { AIAPI } from '../lib/api'
+import type { AIConfig } from '../types'
+import { DEFAULT_AI_CONFIG } from '../types'
 import {
   Palette, Save, RefreshCw,
-  Monitor, Terminal, HardDrive, Sun, Moon
+  Monitor, Terminal, HardDrive, Sun, Moon, Brain
 } from 'lucide-react'
 
 export function Settings() {
@@ -16,6 +22,33 @@ export function Settings() {
     telemetryEnabled, setTelemetry,
     autoUpdate, setAutoUpdate
   } = useUIStore()
+
+  const [aiConfig, setAiConfig] = useState<AIConfig>(DEFAULT_AI_CONFIG)
+  const [aiLoaded, setAiLoaded] = useState(false)
+  const [aiSaved, setAiSaved] = useState(false)
+
+  useEffect(() => {
+    AIAPI.getConfig().then((config) => {
+      if (config) {
+        setAiConfig(config)
+      }
+      setAiLoaded(true)
+    }).catch(() => setAiLoaded(true))
+  }, [])
+
+  const updateAIConfig = (updates: Partial<AIConfig>) => {
+    setAiConfig(prev => ({ ...prev, ...updates }))
+  }
+
+  const handleSaveAIConfig = async () => {
+    try {
+      await AIAPI.saveConfig(aiConfig)
+      setAiSaved(true)
+      setTimeout(() => setAiSaved(false), 2000)
+    } catch (err) {
+      console.error('Failed to save AI config', err)
+    }
+  }
 
   return (
     <div className="h-full overflow-y-auto scrollbar-thin">
@@ -63,6 +96,113 @@ export function Settings() {
               ]}
             />
           </div>
+        </SettingsSection>
+
+        <SettingsSection
+          icon={Brain}
+          title="AI Generation"
+          description="Configure AI image generation settings for automatic layer creation"
+        >
+          {aiLoaded ? (
+            <div className="space-y-4">
+              <Select
+                label="AI Provider"
+                value={aiConfig.provider}
+                onChange={(e) => updateAIConfig({ provider: e.target.value as any })}
+                options={[
+                  { value: 'replicate', label: 'Replicate (Stable Diffusion)' },
+                  { value: 'openai', label: 'OpenAI (DALL-E 3)' }
+                ]}
+              />
+
+              {aiConfig.provider === 'replicate' && (
+                <>
+                  <Input
+                    label="Replicate API Key"
+                    type="password"
+                    value={aiConfig.replicateApiKey}
+                    onChange={(e) => updateAIConfig({ replicateApiKey: e.target.value })}
+                    placeholder="r8_..."
+                  />
+                  <Input
+                    label="Model Version"
+                    value={aiConfig.replicateModel}
+                    onChange={(e) => updateAIConfig({ replicateModel: e.target.value })}
+                    placeholder="stability-ai/stable-diffusion:version"
+                  />
+                </>
+              )}
+
+              {aiConfig.provider === 'openai' && (
+                <>
+                  <Input
+                    label="OpenAI API Key"
+                    type="password"
+                    value={aiConfig.openaiApiKey}
+                    onChange={(e) => updateAIConfig({ openaiApiKey: e.target.value })}
+                    placeholder="sk-..."
+                  />
+                  <Select
+                    label="Model"
+                    value={aiConfig.openaiModel}
+                    onChange={(e) => updateAIConfig({ openaiModel: e.target.value })}
+                    options={[
+                      { value: 'dall-e-3', label: 'DALL-E 3' },
+                      { value: 'dall-e-2', label: 'DALL-E 2' }
+                    ]}
+                  />
+                </>
+              )}
+
+              <div>
+                <label className="text-sm font-medium">Default Prompt Template</label>
+                <textarea
+                  className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
+                  rows={2}
+                  value={aiConfig.defaultPrompt}
+                  onChange={(e) => updateAIConfig({ defaultPrompt: e.target.value })}
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Use {'{category}'} for the layer name. Example: "Create a {'{category}'} for this character"
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Negative Prompt</label>
+                <textarea
+                  className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm mt-1"
+                  rows={2}
+                  value={aiConfig.negativePrompt}
+                  onChange={(e) => updateAIConfig({ negativePrompt: e.target.value })}
+                />
+              </div>
+
+              <Slider
+                label="Inference Steps"
+                value={aiConfig.numInferenceSteps}
+                onChange={(v) => updateAIConfig({ numInferenceSteps: v })}
+                min={10}
+                max={50}
+              />
+
+              <Slider
+                label="Guidance Scale"
+                value={aiConfig.guidanceScale}
+                onChange={(v) => updateAIConfig({ guidanceScale: v })}
+                min={1}
+                max={20}
+                step={0.5}
+              />
+
+              <Button onClick={handleSaveAIConfig} className="w-full">
+                {aiSaved ? 'Saved!' : 'Save AI Configuration'}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-4">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
+            </div>
+          )}
         </SettingsSection>
 
         <SettingsSection

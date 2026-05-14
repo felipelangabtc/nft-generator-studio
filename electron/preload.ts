@@ -31,6 +31,13 @@ const api = {
     preview: (seed?: string) => ipcRenderer.invoke('generation:preview', seed)
   },
 
+  ai: {
+    getConfig: () => ipcRenderer.invoke('ai:getConfig'),
+    saveConfig: (config: any) => ipcRenderer.invoke('ai:saveConfig', config),
+    generateLayers: (request: any) => ipcRenderer.invoke('ai:generateLayers', request),
+    cancel: () => ipcRenderer.invoke('ai:cancel')
+  },
+
   rarity: {
     calculate: () => ipcRenderer.invoke('rarity:calculate'),
     normalize: () => ipcRenderer.invoke('rarity:normalize')

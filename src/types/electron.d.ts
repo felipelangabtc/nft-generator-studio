@@ -25,6 +25,12 @@ export interface ElectronAPI {
     status(): Promise<any>
     preview(seed?: string): Promise<any>
   }
+  ai: {
+    getConfig(): Promise<any>
+    saveConfig(config: any): Promise<void>
+    generateLayers(request: any): Promise<any[]>
+    cancel(): Promise<void>
+  }
   rarity: {
     calculate(): Promise<any>
     normalize(): Promise<any>
