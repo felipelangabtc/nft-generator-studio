@@ -1,0 +1,57 @@
+appId: com.nftgenerator.studio
+productName: NFT Generator Studio
+directories:
+  buildResources: resources
+  output: release
+files:
+  - dist
+  - dist-electron
+  - "!node_modules/**/*"
+  - node_modules/**/*.node
+  - "!**/*.{ts,tsx,map,md}"
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: resources/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  perMachine: true
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  icon: resources/icon.icns
+  category: public.app-category.graphics-design
+  entitlements: resources/entitlements.mac.plist
+  extendInfo:
+    NSMicrophoneUsageDescription: Used for optional voice commands
+    NSCameraUsageDescription: Used for scanning QR codes
+dmg:
+  title: NFT Generator Studio
+  icon: resources/icon.icns
+  background: resources/background.png
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64
+  icon: resources/icon.png
+  category: Graphics
+  synopsis: Professional NFT Collection Generator
+  description: Generate thousands of unique PFP NFTs from layered images
+publish:
+  provider: github
+  owner: nft-generator
+  repo: nft-generator-studio
+  private: false
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/

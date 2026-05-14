@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist-electron/
+release/
+*.db
+*.db-journal
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+*.nftproj
+*.nftproj.zip
+coverage/
+docs/
+temp/

@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  name      String
+  description String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  version   Int      @default(1)
+  tags      String   @default("[]")
+
+  baseImage   String?
+  canvasWidth  Int @default(1024)
+  canvasHeight Int @default(1024)
+
+  categories        Category[]
+  compatibilityRules CompatibilityRule[]
+
+  generationConfigId String?
+  generationConfig   GenerationConfig? @relation(fields: [generationConfigId], references: [id])
+  outputConfigId     String?
+  outputConfig       OutputConfig? @relation(fields: [outputConfigId], references: [id])
+
+  generatedNFTs GeneratedNFT[]
+}
+
+model Category {
+  id        String  @id @default(uuid())
+  name      String
+  zIndex    Int     @default(0)
+  enabled   Boolean @default(true)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  assets Asset[]
+}
+
+model Asset {
+  id        String  @id @default(uuid())
+  name      String
+  fileName  String
+  filePath  String
+  thumbnailPath String
+  rarityWeight Float @default(10.0)
+  rarityTier  String @default("common")
+  rarityScore Float @default(0)
+  enabled   Boolean @default(true)
+  tags      String  @default("[]")
+  hash      String
+  width     Int     @default(1024)
+  height    Int     @default(1024)
+  fileSize  Int     @default(0)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model CompatibilityRule {
+  id           String @id @default(uuid())
+  type         String
+  sourceCategoryId String
+  sourceAssetId    String
+  targetCategoryId String
+  targetAssetId    String
+  enabled      Boolean @default(true)
+  description  String @default("")
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model GenerationConfig {
+  id String @id @default(uuid())
+
+  totalCount    Int  @default(100)
+  seed          String @default("")
+  useSeed       Boolean @default(false)
+  maxRetries    Int   @default(100)
+  parallelThreads Int @default(4)
+  enableDeduplication Boolean @default(true)
+  perceptualHashThreshold Float @default(0.95)
+  structuralHashThreshold Float @default(0.9)
+  generateMetadata Boolean @default(true)
+  generateReports  Boolean @default(true)
+  outputFormat String @default("png")
+  quality      Int    @default(100)
+
+  project Project?
+}
+
+model OutputConfig {
+  id String @id @default(uuid())
+
+  outputDir       String @default("")
+  metadataFormat  String @default("opensea")
+  ipfsBaseUri     String @default("ipfs://")
+  imageBaseUri    String @default("")
+  watermarkEnabled Boolean @default(false)
+  watermarkText   String @default("")
+  watermarkOpacity Float @default(0.3)
+  createSubfolders Boolean @default(true)
+  batchSize       Int    @default(100)
+
+  project Project?
+}
+
+model GeneratedNFT {
+  id        String @id @default(uuid())
+  tokenId   Int
+  name      String
+  description String @default("")
+  imagePath String
+  metadataPath String
+  hash      String
+  rarityScore Float
+  rank      Int
+  seed      String
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  traits GeneratedTrait[]
+}
+
+model GeneratedTrait {
+  id String @id @default(uuid())
+
+  categoryId   String
+  categoryName String
+  assetId      String
+  assetName    String
+  rarityWeight Float
+  rarityTier   String
+
+  nftId String
+  nft   GeneratedNFT @relation(fields: [nftId], references: [id], onDelete: Cascade)
+}
