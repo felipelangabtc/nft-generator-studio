@@ -216,6 +216,9 @@ export class ProjectService {
   async save(project: ProjectData): Promise<ProjectData> {
     project.updatedAt = new Date().toISOString()
     project.version += 1
+    if (!project.filePath && this.currentProject?.filePath) {
+      project.filePath = this.currentProject.filePath
+    }
     this.currentProject = project
     this.saveProjectFile(project)
     this.createBackup(project)
