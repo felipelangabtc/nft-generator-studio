@@ -5,6 +5,7 @@ import { Input } from '../ui/Input'
 import { Badge } from '../ui/Badge'
 import { Progress } from '../ui/Progress'
 import { useProjectStore } from '../../stores/projectStore'
+import { useEditorStore } from '../../stores/editorStore'
 import { useUIStore } from '../../stores/uiStore'
 import { GenerationAPI } from '../../lib/api'
 import { Play, Square, Pause, Sparkles, AlertCircle, Clock, Layers } from 'lucide-react'
@@ -40,6 +41,7 @@ export function GenerationDialog({ open, onClose }: GenerationDialogProps) {
   const handleStart = async () => {
     if (!currentProject) return
     try {
+      await useProjectStore.getState().saveProject()
       await GenerationAPI.start({
         totalCount: count,
         namePrefix: prefix,

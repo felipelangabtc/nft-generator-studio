@@ -116,6 +116,9 @@ function AIGenerationPanelInner({ onClose }: { onClose: () => void }) {
 
     setIsGenerating(false)
     if (localGenerated > 0) {
+      try {
+        await useProjectStore.getState().saveProject()
+      } catch {}
       addToast({ title: 'AI generation complete', description: `${localGenerated} assets generated`, type: 'success' })
     }
   }
